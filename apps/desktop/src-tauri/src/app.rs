@@ -81,8 +81,8 @@ pub fn build() -> tauri::Builder<tauri::Wry> {
         .on_window_event(|window, event| {
             match event {
                 WindowEvent::CloseRequested { api, .. } => {
-                    api.prevent_close();
                     if window.label() == "main" {
+                        api.prevent_close();
                         let _ = window
                             .app_handle()
                             .save_window_state(StateFlags::SIZE | StateFlags::POSITION);
