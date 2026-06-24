@@ -12,7 +12,7 @@
 | `packages/types`                                                                                                                                          | Shared domain models (users, transcriptions, dictionary terms, etc.).                                      |
 | `packages/functions`, `packages/firemix`, `packages/utilities`, `packages/pricing`, `packages/ui`, `packages/typescript-config`, `packages/eslint-config` | Reusable utilities, UI primitives, configuration, and Firemix helpers consumed by every app.               |
 | `docs`                                                                                                                                                    | Architecture notes, release guides, and reference material.                                                |
-| `scripts`                                                                                                                                                 | Automation and helper scripts (for example Linux dependency setup).                                        |
+| `scripts`                                                                                                                                                 | Automation and helper scripts for local development and release tasks.                                     |
 
 ## Architecture Overview
 
@@ -38,7 +38,7 @@ See `desktop-architecture.md` for the full tour.
 
 - Node.js 18+ (desktop/web) and npm 10+.
 - Rust toolchain with `cargo`, `rustup`, and the Tauri CLI (`cargo install tauri-cli`).
-- Platform dependencies for Tauri (GTK/WebKit/AppIndicator/etc.). On Linux you can run `apps/desktop/scripts/setup-linux.sh`. On Windows use `powershell -ExecutionPolicy Bypass -File apps/desktop/scripts/setup-windows.ps1` (add `-EnableGpu` to pull the Vulkan SDK for GPU builds).
+- Platform dependencies for Tauri on macOS or Windows. On Windows use `powershell -ExecutionPolicy Bypass -File apps/desktop/scripts/setup-windows.ps1` (add `-EnableGpu` to pull the Vulkan SDK for GPU builds).
 - A Groq API key if you plan to use hosted transcription or transcript cleanup (`GROQ_API_KEY`).
 - Firebase CLI (`npm install -g firebase-tools`) when working on the functions project.
 
@@ -66,15 +66,9 @@ npm run dev:mac --workspace apps/desktop
 
 # Windows
 npm run dev:windows --workspace apps/desktop
-
-# Linux (CPU)
-npm run dev:linux --workspace apps/desktop
-
-# Linux with Vulkan GPU acceleration
-npm run dev:linux:gpu --workspace apps/desktop
 ```
 
-During local development you can override platform detection by exporting `VOQUILL_DESKTOP_PLATFORM` (`darwin`, `win32`, or `linux`). The desktop dev journey now defaults to the `emulators` flavor (`apps/desktop/.env.emulators`) so that `turbo dev` and the workspace dev scripts point at the Firebase emulator suite; pass `FLAVOR=dev` or `VITE_FLAVOR=dev` when you explicitly want the hosted dev project. Set `VITE_USE_EMULATORS=true` to point at Firebase emulators (this is already true in the emulator flavor).
+During local development you can override platform detection by exporting `VOQUILL_DESKTOP_PLATFORM` (`darwin` or `win32`). The desktop dev journey now defaults to the `emulators` flavor (`apps/desktop/.env.emulators`) so that `turbo dev` and the workspace dev scripts point at the Firebase emulator suite; pass `FLAVOR=dev` or `VITE_FLAVOR=dev` when you explicitly want the hosted dev project. Set `VITE_USE_EMULATORS=true` to point at Firebase emulators (this is already true in the emulator flavor).
 
 ### Running on Windows
 
@@ -135,7 +129,7 @@ Individual workspaces expose the same commands if you need a narrower scope.
 
 ## Releases & CI
 
-- Releases are orchestrated by `.github/workflows/release.yml`, which detects which folders changed and invokes per-component reusable workflows (`release-cli.yml`, `_release-desktop-impl.yml`, `release-docs.yml`, `release-web.yml`, `release-enterprise-admin.yml`, `release-enterprise-gateway.yml`). Pushes to `main`/`prod`/`enterprise` release to the `dev`/`prod`/`enterprise` channels respectively. Desktop builds bump a channel tag, build all three platforms, and publish assets plus `latest.json` manifests. See `desktop-release.md` for step-by-step instructions.
+- Releases are orchestrated by `.github/workflows/release.yml`, which detects which folders changed and invokes per-component reusable workflows (`release-cli.yml`, `_release-desktop-impl.yml`, `release-docs.yml`, `release-web.yml`, `release-enterprise-admin.yml`, `release-enterprise-gateway.yml`). Pushes to `main`/`prod`/`enterprise` release to the `dev`/`prod`/`enterprise` channels respectively. Desktop builds bump a channel tag, build macOS and Windows artifacts, and publish assets plus `latest.json` manifests. See `desktop-release.md` for step-by-step instructions.
 - Turbo caching is configured in `turbo.json`; CI jobs call `npm run build`, `npm run lint`, and other workspace-scoped commands.
 
 ## Documentation
