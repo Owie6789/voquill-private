@@ -39,7 +39,7 @@ See `desktop-architecture.md` for the full tour.
 - Node.js 18+ (desktop/web) and npm 10+.
 - Rust toolchain with `cargo`, `rustup`, and the Tauri CLI (`cargo install tauri-cli`).
 - Platform dependencies for Tauri on macOS or Windows. On Windows use `powershell -ExecutionPolicy Bypass -File apps/desktop/scripts/setup-windows.ps1` (add `-EnableGpu` to pull the Vulkan SDK for GPU builds).
-- A Groq API key if you plan to use hosted transcription or transcript cleanup (`GROQ_API_KEY`).
+- API keys for hosted transcription/cleanup: a **Deepgram** key (streaming transcription) and a **Groq** key (transcript cleanup). In the desktop app you enter these in-app (onboarding / Settings), not via env vars; `GROQ_API_KEY` is only consumed by the Firebase functions.
 - Firebase CLI (`npm install -g firebase-tools`) when working on the functions project.
 
 ## Install dependencies
@@ -125,7 +125,7 @@ Individual workspaces expose the same commands if you need a narrower scope.
 | `VOQUILL_WHISPER_MODEL_URL` / `VOQUILL_WHISPER_MODEL_URL_<SIZE>` | Override download locations for Whisper models when running locally.                                               |
 | `VOQUILL_WHISPER_DISABLE_GPU`                                    | Force the desktop app to avoid GPU inference, useful for debugging.                                                |
 | `VITE_USE_EMULATORS`                                             | When set to `true`, the desktop app points to Firebase emulators instead of production services.                   |
-| `GROQ_API_KEY`                                                   | Enables Groq-backed transcription/cleanup in Firebase functions and in the desktop API transcription mode.         |
+| `GROQ_API_KEY`                                                   | Enables Groq-backed transcription/cleanup in the Firebase functions (server-side). The desktop app takes its Deepgram/Groq keys via onboarding/Settings, not this variable. |
 
 ## Releases & CI
 
