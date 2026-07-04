@@ -77,6 +77,15 @@ pub(crate) fn pill_position(state: &PillState, ww: f64, wh: f64) -> (f64, f64, f
     (pill_x, pill_y, pill_w, pill_h)
 }
 
+pub(crate) fn tooltip_position(state: &PillState, ww: f64, pill_area_top: f64) -> (f64, f64, f64, f64) {
+    let tooltip_w = TOOLTIP_FIXED_WIDTH;
+    let y_offset = (1.0 - state.tooltip_t.get()) * 4.0;
+    let tooltip_x = (ww - tooltip_w) / 2.0;
+    let tooltip_y = pill_area_top - TOOLTIP_GAP - TOOLTIP_HEIGHT + y_offset;
+
+    (tooltip_x, tooltip_y, tooltip_w, TOOLTIP_HEIGHT)
+}
+
 fn draw_pill(gfx: &mut Gfx, state: &PillState, ww: f64, wh: f64) {
     let expand_t = state.expand_t.get();
     let (rx, ry, pill_w, pill_h) = pill_position(state, ww, wh);
@@ -225,12 +234,8 @@ fn draw_tooltip(gfx: &Gfx, state: &PillState, ww: f64, pill_area_top: f64) {
     let style_name = state.style_name.borrow();
     if state.style_count.get() <= 1 || style_name.is_empty() { return; }
 
-    let tooltip_w = TOOLTIP_FIXED_WIDTH;
+    let (tooltip_rx, tooltip_ry, tooltip_w, _) = tooltip_position(state, ww, pill_area_top);
     state.tooltip_width.set(tooltip_w);
-
-    let tooltip_rx = (ww - tooltip_w) / 2.0;
-    let y_offset = (1.0 - tooltip_t) * 4.0;
-    let tooltip_ry = pill_area_top - TOOLTIP_GAP - TOOLTIP_HEIGHT + y_offset;
     let alpha = tooltip_t;
 
     gfx.fill_rounded_rect(tooltip_rx, tooltip_ry, tooltip_w, TOOLTIP_HEIGHT, TOOLTIP_RADIUS,

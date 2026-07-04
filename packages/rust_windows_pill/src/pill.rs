@@ -807,16 +807,16 @@ fn check_hover(hwnd: HWND, state: &PillState) {
     };
 
     let in_tooltip = if state.tooltip_t.get() > 0.1 && state.style_count.get() > 1 {
-        let pill_area_top = win_rect.top as f64 + oy + (dh - PILL_AREA_HEIGHT);
-        let tooltip_w = state.tooltip_width.get();
-        let y_offset = (1.0 - state.tooltip_t.get()) * 4.0;
-        let tooltip_x = win_rect.left as f64 + ox + (dw - tooltip_w) / 2.0;
-        let tooltip_y = pill_area_top - TOOLTIP_GAP - TOOLTIP_HEIGHT + y_offset;
+        let local_pill_area_top = dh - PILL_AREA_HEIGHT;
+        let (local_x, local_y, tooltip_w, tooltip_h) =
+            draw::tooltip_position(state, dw, local_pill_area_top);
+        let tooltip_x = win_rect.left as f64 + ox + local_x;
+        let tooltip_y = win_rect.top as f64 + oy + local_y;
 
         cx >= tooltip_x
             && cx <= tooltip_x + tooltip_w
             && cy >= tooltip_y
-            && cy <= tooltip_y + TOOLTIP_HEIGHT
+            && cy <= tooltip_y + tooltip_h
     } else {
         false
     };
@@ -998,14 +998,14 @@ fn create_edit_overlay(hinstance: HMODULE, main_hwnd: HWND) {
         let default_font = GetStockObject(DEFAULT_GUI_FONT);
         let mut lf_out = LOGFONTW::default();
         let got = GetObjectW(
-            HGDIOBJ(default_font.0),
+            default_font,
             std::mem::size_of::<LOGFONTW>() as i32,
             Some(&mut lf_out as *mut _ as *mut std::ffi::c_void),
         );
         if got > 0 {
             lf = lf_out;
         } else {
-           let face: Vec<u16> = "Segoe UI".encode_utf16().collect();
+            let face: Vec<u16> = "Segoe UI".encode_utf16().collect();
             lf.lfFaceName[..face.len()].copy_from_slice(&face);
         }
         lf.lfHeight = -18;
