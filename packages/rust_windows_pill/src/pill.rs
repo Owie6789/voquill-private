@@ -806,7 +806,22 @@ fn check_hover(hwnd: HWND, state: &PillState) {
         false
     };
 
-    let new_hovered = in_pill || in_panel;
+    let in_tooltip = if state.tooltip_t.get() > 0.1 && state.style_count.get() > 1 {
+        let pill_area_top = win_rect.top as f64 + oy + (dh - PILL_AREA_HEIGHT);
+        let tooltip_w = state.tooltip_width.get();
+        let y_offset = (1.0 - state.tooltip_t.get()) * 4.0;
+        let tooltip_x = win_rect.left as f64 + ox + (dw - tooltip_w) / 2.0;
+        let tooltip_y = pill_area_top - TOOLTIP_GAP - TOOLTIP_HEIGHT + y_offset;
+
+        cx >= tooltip_x
+            && cx <= tooltip_x + tooltip_w
+            && cy >= tooltip_y
+            && cy <= tooltip_y + TOOLTIP_HEIGHT
+    } else {
+        false
+    };
+
+    let new_hovered = in_pill || in_tooltip || in_panel;
     let was_hovered = state.hovered.get();
 
     if new_hovered != was_hovered {
@@ -977,12 +992,24 @@ fn create_edit_overlay(hinstance: HMODULE, main_hwnd: HWND) {
             None,
         ).unwrap();
 
-        // Font: Segoe UI ~14pt
+        // Font: system default UI font (matches the rest of the app), ~14pt.
+        // Falls back to Segoe UI if the stock font can't be queried.
         let mut lf = LOGFONTW::default();
+        let default_font = GetStockObject(DEFAULT_GUI_FONT);
+        let mut lf_out = LOGFONTW::default();
+        let got = GetObjectW(
+            HGDIOBJ(default_font.0),
+            std::mem::size_of::<LOGFONTW>() as i32,
+            Some(&mut lf_out as *mut _ as *mut std::ffi::c_void),
+        );
+        if got > 0 {
+            lf = lf_out;
+        } else {
+           let face: Vec<u16> = "Segoe UI".encode_utf16().collect();
+            lf.lfFaceName[..face.len()].copy_from_slice(&face);
+        }
         lf.lfHeight = -18;
         lf.lfWeight = 400;
-        let face: Vec<u16> = "Segoe UI".encode_utf16().collect();
-        lf.lfFaceName[..face.len()].copy_from_slice(&face);
         let font = CreateFontIndirectW(&lf);
         SendMessageW(edit, WM_SETFONT, Some(WPARAM(font.0 as usize)), Some(LPARAM(1)));
 
